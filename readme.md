@@ -14,7 +14,7 @@ _. have a flower or monster grow per hits
 _. set name of trail on first hit
 
 BUGS
-_. switch to mongodb
+_. switch to mongodb or kyoto cabinet or redis
 
 PHYSICAL
 front: 2 different qr codes, cut in half
