@@ -6,6 +6,10 @@ $qrcodes = SQLite3::Database.open( "qrcodes.db" )
 
 $qrcodes.execute('select * from access') do |write,read|
 
+  get '/test' do
+    "hi dood"
+  end
+
   get '/'+read do
     p locations = db.execute("select * from trail where id=?", read)
     locations.empty? and p "how did you get to an empty trail?"
