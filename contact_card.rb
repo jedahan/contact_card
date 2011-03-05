@@ -16,7 +16,8 @@ $qrcodes.execute('select * from access') do |write,read|
     location = point.new(100,200)
     comment  = "test comment"
 
-    $qrcodes.execute("insert into trail (x, y, comment) values (?, ?, ?)", location.x, location.y, comment )
+    # add naming scheme on first hit
+    $qrcodes.execute("insert into trail (id, x, y, comment) values (?, ?, ?, ?)", write, location.x, location.y, comment )
 
     erb :scan
 
