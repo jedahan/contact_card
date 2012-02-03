@@ -1,29 +1,30 @@
 #!/usr/bin/env ruby
-# Copyright 2011 Jonathan Dahan <jonathan@jedahan.com>
+# Copyright 2011-2012 Jonathan Dahan <jonathan@jedahan.com>
 # Distributed under the terms of the ICSL
 
 require 'uuidtools'
 require 'rqrcode'
 require 'chunky_png'
 require 'quick_magick'
-require 'sqlite3'
+require 'mongo'
 
-$qrcodes = SQLite3::Database.new('qrcodes.db')
+@conn = Mongo::Connection.new
+@db   = @conn['contact_cards']
+$cards = @db['cards']
 
-class Ccard
+class ContactCard
   @@image_dir  = "images"
   @@pixel_size = 10
 
   # Create a pair of url friendly uuids
-  def initialize ( *args )
-    @put = uurid(UUIDTools::UUID.random_create.to_s)
-    @get = uurid(UUIDTools::UUID.random_create.to_s)
-
-    @png = qr2png( RQRCode::QRCode.new(ARGV.first+@put, :size => 5, :level => :h), @@pixel_size )
+  def initialize (args)
+    @write_key = uurid(UUIDTools::UUID.random_create.to_s)
+    @read_key = uurid(UUIDTools::UUID.random_create.to_s)
+    @png = qr2png( RQRCode::QRCode.new(args.first.to_s+@write_key, :size => 5, :level => :h), @@pixel_size )
     @png = glider_overlay(@png, @@pixel_size)
-    @png.save(@@image_dir+'/'+@put+'.png', :fast_rgb)
+    @png.save(@@image_dir+'/'+@write_key+'.png', :fast_rgb)
 
-    $qrcodes.execute("insert into access (put, get) values (?, ?)", @put, @get)
+    $cards.insert({ read_key: @read_key, write_key: @write_key, trail: [ ] } )
   end
 
   # Convert a uuid to a url-friendly, smaller format
@@ -46,7 +47,7 @@ class Ccard
                [ 1, 0, 1, 1, 1, 0, 1 ],
                [ 1, 0, 0, 0, 0, 0, 1 ],
                [ 1, 1, 1, 1, 1, 1, 1 ] ]
-    offset = (png.size[0]/resize - glider[0].size) / 2
+    offset = (png.dimension.width/resize - glider.size) / 2
 
     glider.each_index do |x|
       glider.each_index do |y|
@@ -71,4 +72,4 @@ class Ccard
   end
 end
 
-Ccard.new( ARGV )
+ContactCard.new(ARGV)
