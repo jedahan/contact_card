@@ -1,3 +1,6 @@
 source :gemcutter
-gem 'sinatra'
-gem 'sqlite3'
+gem 'uuidtools'
+gem 'rqrcode'
+gem 'chunky_png'
+gem 'quick_magick'
+gem 'mongo'
