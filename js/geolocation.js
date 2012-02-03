@@ -1,5 +1,6 @@
 $(function() {
     navigator.geolocation.getCurrentPosition(showMap);
+    console.log(trail);
 });
 
 
