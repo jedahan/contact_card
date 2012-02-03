@@ -31,40 +31,37 @@ server = new mongolian
 db = server.db 'contact_cards'
 cards = db.collection 'cards'
 
-app.get '/test', (req,res) ->
-  res.send 'Hello World'
+# Add a route for every id pair
+cards.find( {}, { write_id: 1, read_id: 1}).toArray((error, valid_ids) ->
+  for write_id, read_id in valid_ids
+    app.get '/card/:id(#{read_id})', (req, res) ->
+      show_card(res, read_id, '')
+    app.get '/card/:id(#{write_id})', (req, res) ->
+      show_card(res, read_id, write_id)
+    app.put '/card/:id(#{write_id})', (req, res) ->
+      mark_trail(res, write_id, req.body.location, req.body.note)
+)
 
-# Setup routes for every write and read id
-cards.find({},{ write_id:1, read_id:1}).forEach (card) ->
-  console.log card
-  app.get "/c/#{card.write_id}", mark_trail(card.write_id)
-  app.get "/c/#{card.read_id}", read_trail(card.read_id)
-
-# get the location and an optional note, add it to the db
-mark_trail = (id) ->
-  location = navigator.geolocation.getCurrentPosition
-  note = prompt 'leave a note here'
+# Accept put, adds location and note to the trail
+mark_trail = (res, id, location, note) ->
   cards.findOne { write_id: id }, (error, card) ->
-    # TODO: write
     if error?
       console.log "  #{error}"
     else
       card.trail << { location: location, note: note }
-      read_trail card.read_id
+      res.redirect "/c/#{card.read_id}"
 
-# show a google map with all locations and notes
-read_trail = (id) ->
-  # TODO: rewrite the history to show the current id
-  # history.replace id
-
-  # grab just the trail's history, TODO: pass to the template
-  cards.find({ read_id: id }, { trail:1 }).toArray (error, trail) ->
+# Render the current card trail and pass write_id if it exists
+show_card = (res, id, write_id) ->
+  cards.find({ read_id: id }, { trail:1 }).toArray (error, card) ->
     if error
       console.error "  #{error}"
     else
-      console.log trail
-      res.render 'map.jade', { trail: trail }
+      card.write_id = write_id if write_id?
+      res.render 'map.jade', { locals: { card: card } }
 
 app.use express.static(__dirname + '/public')
 app.use app.router
+app.use express.bodyParser()
+app.use express.methodOverride()
 app.listen 8888
