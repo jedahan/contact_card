@@ -1,0 +1,15 @@
+{
+  "name": "contact_card",
+  "version": "0.0.1",
+  "description": "share where you are",
+
+  "dependencies":{
+    "jade": "",
+    "express": "",
+    "supervisor": "",
+    "mongolian": "",
+    "coffee-script": ""
+  },
+
+  "scripts": { "start": "coffee server.coffee && node server.js"}
+}
