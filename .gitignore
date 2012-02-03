@@ -1,2 +1,4 @@
 images
-qrcodes.db
+*log
+Gemfile.lock
+node_modules
