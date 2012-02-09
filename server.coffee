@@ -1,7 +1,7 @@
-#### Contact
+#### author
 #
-# This is Jonathan Dahan's Contact Card
-#
+# Copyright 2011-2012 Jonathan Dahan <jonathan@jedahan.com>
+# Distributed under the terms of the ICSL
 
 #### Database
 #
