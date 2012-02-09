@@ -7,61 +7,43 @@
 #
 # cards: [ { read_key: uuid(), write_key: uuid(), trail: [ { location: location, note: string },... ] } } ]
 
-#### Installation
-#
-# Contact requires [Node.js](http://nodejs.org/) (`brew install node`)
-# and [npm](http://npmjs.org) (`curl http://npmjs.org/install.sh | sh`) for
-# installation. Install the libraries with:
-#
-#     npm install
-#     npm install supervisor -g
-#     supervisor server.coffee
-
-#### Libararies
-#
-# Express for easy routing, jade for easy html
-
-express = require 'express'
-jade = require 'jade'
 mongolian = require 'mongolian'
-
-app = express.createServer()
-
-server = new mongolian
-db = server.db 'contact_cards'
+db = new mongolian 'localhost/contact_cards'
 cards = db.collection 'cards'
 
-# Add a route for every id pair
-cards.find( {}, { write_id: 1, read_id: 1}).toArray((error, valid_ids) ->
-  for write_id, read_id in valid_ids
-    app.get '/card/:id(#{read_id})', (req, res) ->
-      show_card(res, read_id, '')
-    app.get '/card/:id(#{write_id})', (req, res) ->
-      show_card(res, read_id, write_id)
-    app.put '/card/:id(#{write_id})', (req, res) ->
-      mark_trail(res, write_id, req.body.location, req.body.note)
-)
+require('zappa') ->
+  @enable 'default layout'
+  @use 'bodyParser', 'methodOverride', @app.router, 'static'
 
-# Accept put, adds location and note to the trail
-mark_trail = (res, id, location, note) ->
-  cards.findOne { write_id: id }, (error, card) ->
-    if error?
-      console.log "  #{error}"
+  @get
+    '/card/:id': ->
+      cards.findOne { $or: [{read_key: @params.id}, {write_key: @params.id}] }, (err, card) =>
+        if card?
+          options = read_id: card.read_key, trail: card.trail, scripts: [ 'leaflet/leaflet' ], stylesheets: [ 'leaflet/leaflet' ]
+          options['write_id'] = card.write_key if @params.id is card.write_key
+          @render 'map', options
+        else
+          @send "Invalid card #{@params.id}"
+
+  @put
+    '/card/:id': ->
+      cars.update {write_key: @params.id}, {$addToSet: {trail: {location: @params.location, note: @params.note}}}, (err, card) ->
+        if card?
+          @render map: {err, card}
+        else
+          @send "Invalid card #{@params.id}"
+
+  @view map: ->
+    if @write_id?
+      h1 'Thanks for scanning Jonathan Dahan\'s contact card'
+      # TODO: add a note to the trail ! could use put or sockets
+      # TODO: fix url location bar
     else
-      card.trail << { location: location, note: note }
-      res.redirect "/c/#{card.read_id}"
-
-# Render the current card trail and pass write_id if it exists
-show_card = (res, id, write_id) ->
-  cards.find({ read_id: id }, { trail:1 }).toArray (error, card) ->
-    if error
-      console.error "  #{error}"
-    else
-      card.write_id = write_id if write_id?
-      res.render 'map.jade', { locals: { card: card } }
-
-app.use express.static(__dirname + '/public')
-app.use app.router
-app.use express.bodyParser()
-app.use express.methodOverride()
-app.listen 8888
+      h1 'Welcome back to Jonathan Dahan\'s contact card'
+    p 'resume: http://jedahan.com/resume , portfolio: http://jedahan.jux.com'
+    p 'email: jonathan@jedahan.com , twitter: @jedahan , phone: 631-332-8450'
+    if @write_id?
+      p 'Now that you have my contact information, the artifact has done its job'
+      p 'Share it with others and see how far the trail goes!'
+    h2 "Trail for #{@read_id}: #{@trail}"
+    div id: '#map', style: 'height: 200px'
