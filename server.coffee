@@ -3,9 +3,10 @@
 # Copyright 2011-2012 Jonathan Dahan <jonathan@jedahan.com>
 # Distributed under the terms of the ICSL
 
-#### Database
+#### the cards collection
 #
-# cards: [ { read_key: uuid(), write_key: uuid(), trail: [ { location: location, note: string },... ] } } ]
+# marker: { location: gps coordinates, note: string }
+# card: { read_key: uuid, write_key: uuid, trail: [ marker, ... ] }
 
 mongolian = require 'mongolian'
 db = new mongolian 'localhost/contact_cards'
