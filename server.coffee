@@ -3,10 +3,6 @@
 # Copyright 2011-2012 Jonathan Dahan <jonathan@jedahan.com>
 # Distributed under the terms of the ICSL
 
-#### the cards collection
-#
-# marker: { location: gps coordinates, note: string }
-# card: { read_key: uuid, write_key: uuid, trail: [ marker, ... ] }
 
 mongolian = require 'mongolian'
 db = new mongolian 'localhost/contact_cards'
@@ -37,8 +33,6 @@ require('zappa') ->
   @view map: ->
     if @write_id?
       h1 'Thanks for scanning Jonathan Dahan\'s contact card'
-      # TODO: add a note to the trail ! could use put or sockets
-      # TODO: fix url location bar
     else
       h1 'Welcome back to Jonathan Dahan\'s contact card'
     p 'resume: http://jedahan.com/resume , portfolio: http://jedahan.jux.com'
