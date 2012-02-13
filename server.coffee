@@ -76,4 +76,4 @@ require('zappa') ->
       p 'Now that you have my contact information, the artifact has done its job'
       p 'Share it with others and see how far the trail goes!'
     h2 "Trail for #{@read_id}: #{@trail}"
-    div id: '#map', style: 'height: 200px'
+    div id: 'map', style: 'height: 200px'
