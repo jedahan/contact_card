@@ -16,7 +16,7 @@ require('zappa') ->
     '/card/:id': ->
       cards.findOne { $or: [{read_key: @params.id}, {write_key: @params.id}] }, (err, card) =>
         if card?
-          options = read_id: card.read_key, trail: card.trail, scripts: [ 'leaflet/leaflet' ], stylesheets: [ 'leaflet/leaflet' ]
+          options = read_id: card.read_key, trail: card.trail
           options['write_id'] = card.write_key if @params.id is card.write_key
           @render 'map', options
         else
@@ -31,6 +31,9 @@ require('zappa') ->
           @send "Invalid card #{@params.id}"
 
   @view map: ->
+    @scripts = [ '/leaflet/leaflet' ]
+    @stylesheets = [ '/leaflet/leaflet' ]
+
     if @write_id?
       h1 'Thanks for scanning Jonathan Dahan\'s contact card'
     else
